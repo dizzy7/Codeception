@@ -14,7 +14,7 @@ use Codeception\Util\Annotation;
 
 class ModuleContainer
 {
-    const MODULE_NAMESPACE = '\\Codeception\\Module\\';
+    const MODULE_NAMESPACE = 'Codeception\\Module\\';
 
     protected $config;
 
