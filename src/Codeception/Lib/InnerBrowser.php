@@ -512,13 +512,13 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
 
     public function seeCheckboxIsChecked($checkbox)
     {
-        $checkboxes = $this->getCrawler()->filter($checkbox);
+        $checkboxes = $this->getFieldsByLabelOrCss($checkbox);
         $this->assertDomContains($checkboxes->filter('input[checked=checked]'), 'checkbox');
     }
 
     public function dontSeeCheckboxIsChecked($checkbox)
     {
-        $checkboxes = $this->getCrawler()->filter($checkbox);
+        $checkboxes = $this->getFieldsByLabelOrCss($checkbox);
         $this->assertEquals(0, $checkboxes->filter('input[checked=checked]')->count());
     }
 
@@ -796,16 +796,28 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
         if (strcasecmp($node->first()->getNode(0)->tagName, 'form') === 0) {
             $form = $node->first();
         } else {
-            $form = $node->parents()->filter('form')->first();
+            $element = $node->getNode(0);
+            while ($element = $element->parentNode) {
+                if (strcasecmp($element->tagName, 'form') === 0) {
+                    $form = $this->getCrawler()->filter('xxx');
+                    $form->add($element);
+
+                    break;
+                }
+            }
         }
+
         if (!$form) {
             $this->fail('The selected node is not a form and does not have a form ancestor.');
         }
         $action = (string) $this->getFormUrl($form);
-        if (!isset($this->forms[$action])) {
-            $this->forms[$action] = $this->getFormFromCrawler($form, $action);
+
+        $identifier = $form->attr('id') ? $form->attr('id') : $action;
+
+        if (!isset($this->forms[$identifier])) {
+            $this->forms[$identifier] = $this->getFormFromCrawler($form, $action);
         }
-        return $this->forms[$action];
+        return $this->forms[$identifier];
     }
 
     /**
